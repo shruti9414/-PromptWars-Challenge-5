@@ -1,0 +1,20 @@
+import type { DirectoryVendor } from '../types'
+
+/** Fictional vendors for the Phase 1 demo. None of these businesses exist and no availability is checked. */
+export const DIRECTORY: DirectoryVendor[] = [
+  { id: 'dv-venue-1', name: 'Lakeview Palace Gardens (Demo)', category: 'venue', city: 'Udaipur', priceFrom: 450000, rating: 4.8, tags: ['Outdoor', 'Heritage'], eventTypes: ['wedding', 'community'], blurb: 'Terraced lawns beside the water with a 400-guest capacity.' },
+  { id: 'dv-venue-2', name: 'The Glasshouse Loft (Demo)', category: 'venue', city: 'Mumbai', priceFrom: 120000, rating: 4.6, tags: ['Rooftop', 'Indoor-outdoor'], eventTypes: ['birthday', 'wedding'], blurb: 'Skyline rooftop with a covered lounge for up to 120 guests.' },
+  { id: 'dv-venue-3', name: 'Riverside Community Hall (Demo)', category: 'venue', city: 'Pune', priceFrom: 40000, rating: 4.4, tags: ['Accessible', 'Parking'], eventTypes: ['community', 'birthday'], blurb: 'Step-free hall with a stage, kitchen and ample parking.' },
+  { id: 'dv-cater-1', name: 'Saffron & Salt Caterers (Demo)', category: 'catering', city: 'Udaipur', priceFrom: 900, rating: 4.7, tags: ['Vegetarian', 'Live counters'], eventTypes: ['wedding', 'community'], blurb: 'Regional menus with live counters. Priced per guest.' },
+  { id: 'dv-cater-2', name: 'Crumb & Candle Bakehouse (Demo)', category: 'catering', city: 'Mumbai', priceFrom: 350, rating: 4.9, tags: ['Cakes', 'Dessert tables'], eventTypes: ['birthday'], blurb: 'Custom cakes and dessert tables. Priced per guest.' },
+  { id: 'dv-photo-1', name: 'Frame & Fable Studio (Demo)', category: 'photo', city: 'Jaipur', priceFrom: 150000, rating: 4.9, tags: ['Candid', 'Drone'], eventTypes: ['wedding'], blurb: 'Documentary-style wedding photography and highlight films.' },
+  { id: 'dv-photo-2', name: 'Snapstory Collective (Demo)', category: 'photo', city: 'Pune', priceFrom: 25000, rating: 4.5, tags: ['Events', 'Same-day edits'], eventTypes: ['birthday', 'community'], blurb: 'Fast, friendly event coverage with next-day galleries.' },
+  { id: 'dv-decor-1', name: 'Bloom Atelier (Demo)', category: 'decor', city: 'Udaipur', priceFrom: 120000, rating: 4.7, tags: ['Florals', 'Stage design'], eventTypes: ['wedding', 'birthday'], blurb: 'Seasonal florals and mandap styling with sustainable props.' },
+  { id: 'dv-decor-2', name: 'Paper Moon Party Co. (Demo)', category: 'decor', city: 'Mumbai', priceFrom: 20000, rating: 4.6, tags: ['Balloons', 'Backdrops'], eventTypes: ['birthday', 'community'], blurb: 'Balloon arches, backdrops and themed tablescapes.' },
+  { id: 'dv-music-1', name: 'Midnight Raga Collective (Demo)', category: 'music', city: 'Jaipur', priceFrom: 90000, rating: 4.8, tags: ['Live band', 'Fusion'], eventTypes: ['wedding', 'community'], blurb: 'Seven-piece live band blending classical and contemporary.' },
+  { id: 'dv-music-2', name: 'DJ Orbit (Demo)', category: 'music', city: 'Mumbai', priceFrom: 30000, rating: 4.5, tags: ['DJ', 'Lights'], eventTypes: ['birthday', 'wedding'], blurb: 'Open-format DJ sets with a lighting rig included.' },
+  { id: 'dv-stat-1', name: 'Ink & Ivory Press (Demo)', category: 'stationery', city: 'Delhi', priceFrom: 15000, rating: 4.6, tags: ['Letterpress', 'Digital invites'], eventTypes: ['wedding', 'birthday'], blurb: 'Letterpress invitations plus matching digital RSVP pages.' },
+  { id: 'dv-trans-1', name: 'Wedding Wheels Fleet (Demo)', category: 'transport', city: 'Udaipur', priceFrom: 35000, rating: 4.3, tags: ['Shuttles', 'Vintage cars'], eventTypes: ['wedding'], blurb: 'Guest shuttles and a vintage car for the couple.' },
+  { id: 'dv-act-1', name: 'Playground Labs (Demo)', category: 'activities', city: 'Pune', priceFrom: 18000, rating: 4.7, tags: ['Kids', 'Games'], eventTypes: ['birthday', 'community'], blurb: 'Hosts, games and craft stations for mixed-age crowds.' },
+  { id: 'dv-fav-1', name: 'Little Keepsakes (Demo)', category: 'favors', city: 'Delhi', priceFrom: 120, rating: 4.4, tags: ['Return gifts', 'Personalised'], eventTypes: ['wedding', 'birthday'], blurb: 'Personalised return gifts. Priced per piece.' },
+]

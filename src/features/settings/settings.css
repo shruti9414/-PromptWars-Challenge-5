@@ -1,0 +1,5 @@
+.settings { max-width: 780px; }
+.settings .card { margin-bottom: 18px; display: grid; gap: 16px; }
+.settings .card__title { margin-bottom: 0; }
+.settings__buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+.settings__note { font-size: 0.85rem; }

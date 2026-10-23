@@ -1,0 +1,47 @@
+:root {
+  /* Palette: midnight navy, elegant violet, electric blue, clean white */
+  --navy-950: #070b24;
+  --navy-900: #0b1033;
+  --navy-800: #131a4a;
+  --navy-700: #1e2866;
+  --violet-50: #f5f3ff;
+  --violet-100: #ece8ff;
+  --violet-300: #b7a6ff;
+  --violet-500: #7c5cff;
+  --violet-600: #6644f0;
+  --violet-700: #5232d4;
+  --blue-100: #e1ebff;
+  --blue-500: #2f6bff;
+  --blue-600: #1f55e0;
+
+  --ink: #0f1535;
+  --ink-2: #444c70;
+  --ink-3: #626a8c;
+  --line: #e3e6f2;
+  --canvas: #f5f6fb;
+  --surface: #ffffff;
+
+  --ok: #0b7a54;
+  --ok-bg: #e2f6ed;
+  --warn: #8f5200;
+  --warn-bg: #fff0d1;
+  --danger: #b0233a;
+  --danger-bg: #fde7ea;
+
+  --grad-brand: linear-gradient(120deg, var(--violet-600), var(--blue-600));
+  --grad-night: radial-gradient(1200px 600px at 80% -10%, #2a2f86 0%, transparent 60%), linear-gradient(160deg, var(--navy-950), var(--navy-900) 55%, #141b52);
+
+  --font-display: 'Fraunces Variable', Georgia, 'Times New Roman', serif;
+  --font-body: 'Inter Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --shadow-sm: 0 1px 2px rgb(15 21 53 / 0.06), 0 1px 3px rgb(15 21 53 / 0.05);
+  --shadow-md: 0 8px 24px rgb(15 21 53 / 0.08);
+  --shadow-lg: 0 24px 60px rgb(11 16 51 / 0.22);
+  --focus: 0 0 0 3px #fff, 0 0 0 5px var(--blue-600);
+
+  --ease: cubic-bezier(0.22, 0.8, 0.28, 1);
+  --sidebar-w: 272px;
+}
