@@ -1,10 +1,29 @@
 # Gatherly AI: Celebration & Event Planner
 
-PromptWars Challenge 5 entry. **Phase 1** (UI and core workflow), **Phase 2** (GenAI planning) and **Phase 3** (full functionality on local persistence, deliberately with no database) are implemented. Everything — events, budgets, timelines, vendors, guests, AI plan history and preferences — lives in `localStorage` in the browser; there is no account system or server-side storage.
+*Your dream event, planned with AI.* A web app for planning **weddings, birthdays, anniversaries and community events**: budgets, timelines, vendor checklists, guest lists and AI-assisted plans in one place. Built for PromptWars Challenge 5.
 
 ## Chosen vertical
 
-**Celebration & Event Planner.** An assistant that helps people organise **weddings, birthdays and community events** with budgets, timelines, vendor checklists and personalised ideas.
+**Celebration & Event Planner.** An assistant that helps people organise celebrations with budgets, timelines, vendor checklists and personalised ideas.
+
+## The problem and who it is for
+
+Planning a celebration means juggling a budget, dozens of dated tasks, vendors and a guest list, usually across chats and spreadsheets. Gatherly AI is for **families and friends organising a wedding, birthday or anniversary, and volunteers running community events**, who want a clear plan they can adjust, not a black box.
+
+## Approach in one paragraph
+
+You describe the event (type, date, place, guests, budget, theme, preferences). The app builds a starter plan from rule-based templates, and the **AI Planner** can generate or refresh a full plan or one section (theme and ideas, budget, timeline, vendors). AI output is only ever a *suggestion*: it is validated, every number and date is recalculated by application code, and you review a preview before anything is applied. Your own edits, paid items and finished tasks are protected. Everything is stored in your browser; there is no database or account.
+
+## How it aligns with the challenge
+
+| Challenge need | Where it lives |
+| --- | --- |
+| Budgets | Budget page: planned vs actual, remaining, over-budget warnings, category charts, cost per guest, CSV export |
+| Timelines | Timeline page: dated tasks, priorities, prerequisites, overdue flags, list and calendar views, date-change preview |
+| Vendor checklists | Vendor Checklist and Directory: statuses, requirements, quotes linked to Budget, favourites |
+| Personalised ideas | AI Planner (themes, decor, activities, food, risks, savings) and the Ideas Gallery |
+| Guests | RSVP tracking, plus-ones, dietary notes, CSV import and export |
+| GenAI | Server-side AI route with validated structured output; a clearly labelled demo planner when no key is set |
 
 ## What it does
 
@@ -71,14 +90,17 @@ Copy `.env.example` to `.env.local` and fill it in. `.env*` files are git-ignore
 
 ## Setup
 
-Requires Node.js 20 or newer.
+Requires **Node.js 20.19+ or 22.12+** (a Vite requirement) and npm. Run every command from the project folder (the one containing `package.json`).
 
-```bash
+```powershell
 npm install
-cp .env.example .env.local   # optional: add ANTHROPIC_API_KEY for live AI
-npm run dev                  # http://localhost:5173 (UI and /api together)
+copy .env.example .env.local   # optional: add ANTHROPIC_API_KEY for live AI (macOS/Linux: cp)
+npm run dev                  # open http://localhost:5173 (UI and /api together); stop with Ctrl+C
 npm run build                # type-check + production build into dist/
+npm run preview              # serve the build at http://localhost:4173
 ```
+
+Without a key the app runs fully in labelled demo mode. See [MANUAL_TESTING.md](MANUAL_TESTING.md) for a browser checklist.
 
 Deploying to Vercel works with no configuration: `dist/` is served statically and `api/*.ts` become functions. Add `ANTHROPIC_API_KEY` in the project's environment variables.
 
