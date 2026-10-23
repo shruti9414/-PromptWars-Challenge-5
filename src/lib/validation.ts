@@ -63,7 +63,7 @@ export function parseNumber(value: string): number | null {
   return Number.isFinite(n) ? n : null
 }
 
-const EVENT_TYPE_IDS: EventType[] = ['wedding', 'birthday', 'community']
+const EVENT_TYPE_IDS: EventType[] = ['wedding', 'birthday', 'anniversary', 'community']
 const VENUE_IDS = ['not-started', 'shortlisting', 'booked', 'own-space']
 
 function validateType(draft: EventDraft, errors: FieldErrors<EventDraft>) {
@@ -195,12 +195,14 @@ export function validateExpense(form: ExpenseForm) {
 }
 
 export interface TaskForm { title: string; dueDate: string; priority: Priority }
-export function validateTask(form: TaskForm) {
+/** `limit.maxDate` is the event date; a date already saved on the task (`limit.keep`) is never rejected so old tasks stay editable. */
+export function validateTask(form: TaskForm, limit?: { maxDate: string; keep?: string }) {
   const errors: FieldErrors<TaskForm> = {}
   const title = cleanText(form.title)
   if (!title) errors.title = 'Describe the task.'
   else if (title.length > 120) errors.title = 'Keep it under 120 characters.'
   if (!isValidISODate(form.dueDate)) errors.dueDate = 'Pick a due date.'
+  else if (limit && form.dueDate > limit.maxDate && form.dueDate !== limit.keep) errors.dueDate = 'A task cannot be due after the event date.'
   return { errors, value: { title } }
 }
 

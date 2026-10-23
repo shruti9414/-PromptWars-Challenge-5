@@ -62,7 +62,7 @@ export function IdeasPage() {
       <div className="ideas__filters">
         <SearchInput label="Search ideas" placeholder="Search ideas" value={query} onChange={(e) => setQuery(e.target.value)} />
         <FilterChips<TypeFilter> label="Filter by event type" value={type} onChange={setType}
-          options={[{ id: 'all', label: 'Every event' }, { id: 'wedding', label: 'Weddings' }, { id: 'birthday', label: 'Birthdays' }, { id: 'community', label: 'Community' }]} />
+          options={[{ id: 'all', label: 'Every event' }, { id: 'wedding', label: 'Weddings' }, { id: 'birthday', label: 'Birthdays' }, { id: 'anniversary', label: 'Anniversaries' }, { id: 'community', label: 'Community' }]} />
         <FilterChips<CategoryFilter> label="Filter by category" value={category} onChange={setCategory} options={CATEGORY_OPTIONS} />
         <FilterChips<CostFilter> label="Filter by cost" value={cost} onChange={setCost}
           options={[{ id: '0', label: 'Any cost' }, { id: '1', label: 'Budget-friendly' }, { id: '2', label: 'Mid-range' }, { id: '3', label: 'Splurge' }]} />

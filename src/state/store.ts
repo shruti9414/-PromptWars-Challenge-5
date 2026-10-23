@@ -7,6 +7,7 @@ import { reducer } from './reducer'
 import type { Action } from './reducer'
 
 let state: AppState = loadState() ?? createDemoState(todayISO())
+let saveFailed = false
 const listeners = new Set<() => void>()
 
 export const store = {
@@ -15,7 +16,7 @@ export const store = {
     const next = reducer(state, action)
     if (next === state) return
     state = next
-    saveState(state)
+    saveFailed = !saveState(state)
     listeners.forEach((l) => l())
   },
   subscribe(listener: () => void): () => void {
@@ -39,6 +40,9 @@ export const store = {
 export function useStore<T>(selector: (s: AppState) => T): T {
   return useSyncExternalStore(store.subscribe, () => selector(state))
 }
+
+/** True when the last save was refused by the browser, so recent changes exist only in this tab. */
+export const useSaveFailed = (): boolean => useSyncExternalStore(store.subscribe, () => saveFailed)
 
 export function useActiveEvent(): EventPlan | undefined {
   return useStore((s) => s.events.find((e) => e.id === s.activeEventId))

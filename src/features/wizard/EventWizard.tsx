@@ -5,6 +5,8 @@ import { PageHeader } from '../../components/ui/Display'
 import { toast } from '../../components/ui/Toast'
 import { EVENT_TYPES } from '../../data/constants'
 import { todayISO } from '../../lib/dates'
+import { applyReschedule, planReschedule } from '../../lib/reschedule'
+import type { ReschedulePlan } from '../../lib/reschedule'
 import {
   EMPTY_DRAFT,
   WIZARD_STEPS,
@@ -20,7 +22,8 @@ import { useDocumentTitle } from '../../hooks'
 import { createEvent, updateEvent } from '../../state/actions'
 import { clearDraft, loadDraft, saveDraft } from '../../state/persistence'
 import { useStore } from '../../state/store'
-import type { EventDraft, EventPlan } from '../../types'
+import type { EventDraft, EventInput, EventPlan } from '../../types'
+import { ReschedulePreview } from './ReschedulePreview'
 import { BudgetStep, DetailsStep, PreferencesStep, TypeStep } from './steps'
 import './wizard.css'
 
@@ -57,6 +60,7 @@ function EventWizard({ existing }: { existing: EventPlan | undefined }) {
   const [errors, setErrors] = useState<FieldErrors<EventDraft>>({})
   const headingRef = useRef<HTMLHeadingElement>(null)
   const firstRender = useRef(true)
+  const [pending, setPending] = useState<{ input: EventInput; plan: ReschedulePlan } | null>(null)
 
   const step = WIZARD_STEPS[stepIndex]!
   const allowPast = editing && draft.date === existing?.date
@@ -97,6 +101,14 @@ function EventWizard({ existing }: { existing: EventPlan | undefined }) {
     setStepIndex((i) => Math.min(i + 1, WIZARD_STEPS.length - 1))
   }
 
+  const saveExisting = (e: EventPlan, input: EventInput, moveIds?: Set<string>, plan?: ReschedulePlan) => {
+    const tasks = plan && moveIds && moveIds.size ? applyReschedule(e.tasks, plan.shifts, moveIds) : undefined
+    updateEvent(e.id, input, tasks)
+    toast(tasks ? `Event updated and ${moveIds?.size} task date${moveIds?.size === 1 ? "" : "s"} moved` : "Event updated")
+    setPending(null)
+    navigate("/app/events")
+  }
+
   const submit = () => {
     const found = validateDraft(draft, today, allowPast)
     if (hasErrors(found)) {
@@ -107,9 +119,13 @@ function EventWizard({ existing }: { existing: EventPlan | undefined }) {
     }
     const input = draftToInput(draft)
     if (existing) {
-      updateEvent(existing.id, input)
-      toast('Event updated')
-      navigate('/app/events')
+      // A new date shifts deadlines, so show exactly what would move before saving anything.
+      const plan = input.date !== existing.date ? planReschedule(existing.tasks, existing.date, input.date, today) : null
+      if (plan && plan.shifts.length > 0) {
+        setPending({ input, plan })
+        return
+      }
+      saveExisting(existing, input)
     } else {
       createEvent(input, draft.useSuggestedPlan)
       clearDraft()
@@ -129,7 +145,7 @@ function EventWizard({ existing }: { existing: EventPlan | undefined }) {
       <ol className="steps" aria-label="Progress">
         {WIZARD_STEPS.map((s, i) => (
           <li key={s} className={`steps__item${i === stepIndex ? ' is-current' : ''}${i < stepIndex ? ' is-done' : ''}`} aria-current={i === stepIndex ? 'step' : undefined}>
-            <span className="steps__num">{i < stepIndex ? 'âœ“' : i + 1}</span>
+            <span className="steps__num">{i < stepIndex ? '✓' : i + 1}</span>
             <span className="steps__label">{STEP_LABEL[s]}</span>
           </li>
         ))}
@@ -172,6 +188,15 @@ function EventWizard({ existing }: { existing: EventPlan | undefined }) {
           </div>
         </div>
       </form>
+      {pending && existing && (
+        <ReschedulePreview
+          plan={pending.plan}
+          oldDate={existing.date}
+          newDate={pending.input.date}
+          onCancel={() => setPending(null)}
+          onConfirm={(ids) => saveExisting(existing, pending.input, ids, pending.plan)}
+        />
+      )}
     </div>
   )
 }

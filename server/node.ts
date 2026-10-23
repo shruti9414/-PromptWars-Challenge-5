@@ -34,8 +34,29 @@ function send(res: NodeRes, r: HandlerResult) {
   res.statusCode = r.status
   res.setHeader('content-type', 'application/json; charset=utf-8')
   res.setHeader('cache-control', 'no-store')
+  res.setHeader('x-content-type-options', 'nosniff')
+  res.setHeader('referrer-policy', 'no-referrer')
   for (const [k, v] of Object.entries(r.headers ?? {})) res.setHeader(k, v)
   res.end(JSON.stringify(r.body))
+}
+
+const header = (req: NodeReq, name: string): string | undefined => {
+  const v = req.headers[name]
+  return Array.isArray(v) ? v[0] : v
+}
+
+/**
+ * Browsers attach an Origin header to cross-site requests. The API is only meant for this app's own pages, so a
+ * request from a different site (which could burn the AI quota) is refused. Requests without Origin (curl, tests) pass.
+ */
+export function isCrossOrigin(req: NodeReq): boolean {
+  const origin = header(req, 'origin')
+  if (!origin) return header(req, 'sec-fetch-site') === 'cross-site'
+  try {
+    return new URL(origin).host !== header(req, 'host')
+  } catch {
+    return true
+  }
 }
 
 /** Which endpoint a request targets. */
@@ -47,6 +68,10 @@ export async function handleNode(route: Route, req: NodeReq, res: NodeRes, env: 
     return send(res, statusHandler(env))
   }
   if (req.method !== 'POST') return send(res, { status: 405, body: { error: { kind: 'method_not_allowed', message: 'Use POST.' } }, headers: { allow: 'POST' } })
+  if (isCrossOrigin(req)) return send(res, { status: 403, body: { error: { kind: 'invalid_request', message: 'Requests from other sites are not allowed.' } } })
+  if (!header(req, 'content-type')?.toLowerCase().startsWith('application/json')) {
+    return send(res, { status: 415, body: { error: { kind: 'invalid_request', message: 'Send the request as JSON.' } } })
+  }
   const payload = body ?? req.body
   const key = clientKey(req)
   try {

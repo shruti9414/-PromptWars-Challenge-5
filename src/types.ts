@@ -1,5 +1,5 @@
 ﻿import type { PlanRevision, StoredAiPlan } from './ai/schema'
-export type EventType = 'wedding' | 'birthday' | 'community'
+export type EventType = 'wedding' | 'birthday' | 'anniversary' | 'community'
 export type Priority = 'low' | 'medium' | 'high'
 export type RsvpStatus = 'pending' | 'accepted' | 'maybe' | 'declined'
 export type GuestGroup = 'family' | 'friends' | 'colleagues' | 'community'
@@ -100,6 +100,8 @@ export interface EventPlan {
   vendors: VendorBooking[]
   guests: Guest[]
   savedIdeas: string[]
+  /** Ids of demo-directory vendors the user starred for this event. */
+  favoriteVendors?: string[]
   venueStatus?: VenueStatus
   priorities?: string[]
   aiPlan?: StoredAiPlan

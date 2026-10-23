@@ -18,7 +18,7 @@ describe('landing page', () => {
   it('shows the product, labels the demo honestly and links into the app', async () => {
     renderApp('#/')
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/dream event/i)
-    expect(screen.getByText(/Phase 1 preview/i)).toBeInTheDocument()
+    expect(screen.getByText(/sample events included/i)).toBeInTheDocument()
     await userEvent.click(screen.getAllByRole('link', { name: /explore the demo/i })[0]!)
     expect(await screen.findByRole('heading', { level: 1, name: /Aarav & Meera/ })).toBeInTheDocument()
   })

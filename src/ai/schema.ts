@@ -25,7 +25,7 @@ const money = z.number().finite().min(0).max(1_000_000_000)
  * free-form notes, guest names and any vendor contact details.
  */
 export const AiContextSchema = z.strictObject({
-  eventType: z.enum(['wedding', 'birthday', 'community']),
+  eventType: z.enum(['wedding', 'birthday', 'anniversary', 'community']),
   date: isoDate,
   location: text(100),
   guestCount: z.number().int().min(1).max(5000),

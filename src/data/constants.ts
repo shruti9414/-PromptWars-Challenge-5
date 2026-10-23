@@ -49,6 +49,14 @@ export const EVENT_TYPES: EventTypeMeta[] = [
     defaultBudget: 150000,
   },
   {
+    id: 'anniversary',
+    label: 'Anniversary',
+    tagline: 'Silver, golden or first: celebrate the years together.',
+    image: IMG.dinner,
+    defaultGuests: 60,
+    defaultBudget: 400000,
+  },
+  {
     id: 'community',
     label: 'Community event',
     tagline: 'Meetups, fundraisers, festivals and neighbourhood days.',
@@ -61,6 +69,7 @@ export const EVENT_TYPES: EventTypeMeta[] = [
 export const EVENT_TYPE_LABEL: Record<EventType, string> = {
   wedding: 'Wedding',
   birthday: 'Birthday',
+  anniversary: 'Anniversary',
   community: 'Community',
 }
 

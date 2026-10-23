@@ -17,6 +17,7 @@ interface Props {
 
 /** Mount with a `key` so the form resets for each vendor. */
 export function VendorDialog({ open, vendor, onClose, onSave }: Props) {
+  const [vendorId] = useState(() => vendor?.id ?? newId())
   const [form, setForm] = useState<VendorForm>({
     name: vendor?.name ?? '',
     category: vendor?.category ?? 'venue',
@@ -34,7 +35,7 @@ export function VendorDialog({ open, vendor, onClose, onSave }: Props) {
     onSave({
       ...vendor,
       manual: true,
-      id: vendor?.id ?? newId(),
+      id: vendorId,
       category: form.category,
       status: form.status,
       name: result.value.name,

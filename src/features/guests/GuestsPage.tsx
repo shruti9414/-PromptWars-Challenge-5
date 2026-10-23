@@ -69,8 +69,10 @@ function Guests({ event }: { event: EventPlan }) {
     const plusCol = colIndex(header, 'Plus-ones')
     const dietaryCol = colIndex(header, 'Dietary')
 
-    let imported = 0
+    const known = new Set(event.guests.map((g) => g.name.toLowerCase()))
+    const added: Guest[] = []
     let skipped = 0
+    let duplicates = 0
     for (const r of rows.slice(1, 2001)) {
       const name = cleanText(r[nameCol] ?? '')
       if (!name || name.length > LIMITS.title) { skipped++; continue }
@@ -79,11 +81,16 @@ function Guests({ event }: { event: EventPlan }) {
       const plusRaw = plusCol >= 0 ? parseNumber(r[plusCol] ?? '') : 0
       const plusOnes = plusRaw === null ? 0 : Math.min(Math.max(Math.round(plusRaw), 0), LIMITS.plusOnes)
       const dietary = cleanText(dietaryCol >= 0 ? (r[dietaryCol] ?? '') : '').slice(0, 60)
-      store.dispatch({ type: 'item/upsert', eventId: event.id, collection: 'guests', item: { id: newId(), name, group, rsvp, plusOnes, dietary } })
-      imported++
+      if (known.has(name.toLowerCase())) { duplicates++; continue }
+      known.add(name.toLowerCase())
+      added.push({ id: newId(), name, group, rsvp, plusOnes, dietary })
     }
-    if (imported === 0) toast('No valid rows found — check the Name column.')
-    else toast(skipped > 0 ? `Imported ${imported} guest${imported === 1 ? '' : 's'}, skipped ${skipped} invalid row${skipped === 1 ? '' : 's'}` : `Imported ${imported} guest${imported === 1 ? '' : 's'}`)
+    const imported = added.length
+    // One update for the whole file: a single save and render instead of one per row.
+    if (imported > 0) store.dispatch({ type: 'event/update', id: event.id, patch: { guests: [...event.guests, ...added] } })
+    const notes = [skipped > 0 ? `skipped ${skipped} invalid row${skipped === 1 ? '' : 's'}` : '', duplicates > 0 ? `ignored ${duplicates} already on the list` : ''].filter(Boolean).join(', ')
+    if (imported === 0) toast(duplicates > 0 ? 'Everyone in this file is already on the guest list.' : 'No valid rows found. Check the Name column.')
+    else toast(`Imported ${imported} guest${imported === 1 ? '' : 's'}${notes ? `, ${notes}` : ''}`)
   }
 
   const rows = useMemo(() => {

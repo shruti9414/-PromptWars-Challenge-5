@@ -11,14 +11,14 @@ PromptWars Challenge 5 entry. **Phase 1** (UI and core workflow), **Phase 2** (G
 | Screen | What it does |
 | --- | --- |
 | Landing | Product story, event types, how it works, link into the demo |
-| Event wizard | Type, name, date, location, guests, budget, theme, venue status, priorities, preferences. Validated per step, progress indicator, draft preserved; also used to edit |
+| Event wizard | Type (wedding, birthday, anniversary, community), name, date, location, guests, budget, theme, venue status, priorities, preferences. Validated per step, progress indicator, draft preserved; also used to edit |
 | Dashboard | Countdown, progress rings, budget donut, next tasks, vendor status, rule-based suggestions |
 | **AI Planner** | Generate a full plan or regenerate one section, preview exactly what changes, apply with confirmation, restore from plan history, chat with a contextual assistant |
 | My Events | Search, filter, sort, open, edit, delete |
 | Budget | Totals, charts, expense add/edit/delete, paid toggle, over-budget warning, CSV export |
-| Timeline | Tasks by overdue / month / done, priorities, dependencies, booking deadlines, filters |
+| Timeline | List or month-calendar view; tasks by overdue / month / done, priorities, prerequisites (loops and later-dated prerequisites are refused), booking deadlines, filters. Changing the event date previews every deadline that would move; completed tasks never move and tasks you edited move only if you tick them |
 | Vendor Checklist | Needed, contacted, quote received, booked, completed, declined; requirements, search criteria, book-by dates; booking a vendor with a quote links (and keeps in sync with) one Budget expense |
-| Vendor Directory | Fictional demo vendors; add to checklist |
+| Vendor Directory | Fictional demo vendors; search, filter, star favourites (per event), add to checklist |
 | Ideas Gallery | Curated ideas with filters; save favourites |
 | Guests | RSVP status, plus-ones, dietary needs, live headcount, CSV import (with file-type/size validation) and export |
 | Settings | Currency, reduce motion, JSON export, reset/delete data |
@@ -89,7 +89,7 @@ npm test           # Vitest + Testing Library, runs once
 npm run typecheck  # strict TypeScript
 ```
 
-The suite (about 250 tests) covers Phase 1 (form validation, budget maths, planner, flows through every screen), Phase 2, and Phase 3's CSV encode/decode and file validation (`src/lib/csv.test.ts`):
+The suite (about 340 tests) covers Phase 1 (form validation, budget maths, planner, flows through every screen), Phase 2, and Phase 3 (CSV encode/decode and file validation, task dependencies, date-change rescheduling, calendar helpers, favourites, anniversary events):
 
 - AI schema validation, including malformed, truncated and out-of-range model output
 - budget limits: cost per guest, over-budget detection, trimmed alternatives, contingency, guest/percentage changes
@@ -102,6 +102,14 @@ The suite (about 250 tests) covers Phase 1 (form validation, budget maths, plann
 
 Live-model calls are tested against a mocked provider; no test uses the network or a real key.
 
+## Security notes
+
+- The API key is read only in `server/` and `api/` from `ANTHROPIC_API_KEY`; the browser bundle contains no key or provider URL.
+- API routes accept only `POST` with `application/json` (`GET` for status), refuse requests whose `Origin` is another site, cap the body at 24 KB (measured in bytes), validate every field with Zod (unknown fields are rejected), rate-limit per client, and return generic error messages with no stack traces or provider bodies. Nothing is logged.
+- Model output is validated with Zod on the server and again in the browser; React renders it as text (no `dangerouslySetInnerHTML`), and user text in prompts is fenced as data.
+- `vercel.json` sets a Content-Security-Policy (same-origin scripts, no framing), `nosniff`, `no-referrer` and a restrictive Permissions-Policy for deployed builds.
+- localStorage is not secure storage and the app has no accounts, so there are no multi-user guarantees. Stored data is validated on load: a damaged event is skipped (the rest load), the original text is copied to a backup key before anything can overwrite it, and a notice explains what happened. If the browser refuses a write, the app says so instead of failing silently.
+
 ## Assumptions and limits
 
 - By design, there is no database or login: all data lives in the browser's `localStorage`, scoped to one browser on one device. Clearing site data, using a different browser, or going incognito starts fresh. "Export as JSON" (Settings) is the only way to move data elsewhere.
@@ -109,6 +117,7 @@ Live-model calls are tested against a mocked provider; no test uses the network 
 - A vendor's linked Budget expense is created the moment it's booked with a quote, and its planned amount tracks later quote edits; it is never deleted automatically, and any actual/paid amount you enter against it is yours to manage from the Budget page.
 - Guest CSV import accepts `Name, Group, RSVP, Plus-ones, Dietary` columns (any order, case-insensitive); rows need at least a name, unrecognised Group/RSVP values fall back to a default, and out-of-range plus-ones are clamped rather than rejecting the row.
 - Currency (default INR) changes display only; it does not convert values.
+- There is no ESLint configuration; quality gates are strict TypeScript (`noUnusedLocals`, `noUnusedParameters`) and the test suite. Layout at different screen sizes and screen-reader behaviour have not been checked in a real browser; the automated accessibility checks cover structure only (headings, names, ids, alt text).
 - Live-AI behaviour depends on the provider and could not be exercised in this repository without a key: the request/response path is verified with a mocked provider, not a real one.
 - Photography is from Unsplash, served as small WebP files from `public/img`.
 

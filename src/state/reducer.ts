@@ -16,6 +16,7 @@ export type Action =
   | { type: 'item/upsert'; eventId: string; collection: CollectionName; item: Collections[CollectionName] }
   | { type: 'item/remove'; eventId: string; collection: CollectionName; itemId: string }
   | { type: 'idea/toggle'; eventId: string; ideaId: string }
+  | { type: 'vendor/favorite'; eventId: string; directoryId: string }
   | { type: 'settings/update'; patch: Partial<Settings> }
   | { type: 'state/replace'; state: AppState }
 
@@ -56,6 +57,11 @@ export function reducer(state: AppState, action: Action): AppState {
           ? e.savedIdeas.filter((i) => i !== action.ideaId)
           : [...e.savedIdeas, action.ideaId],
       }))
+    case 'vendor/favorite':
+      return mapEvent(state, action.eventId, (e) => {
+        const cur = e.favoriteVendors ?? []
+        return { ...e, favoriteVendors: cur.includes(action.directoryId) ? cur.filter((i) => i !== action.directoryId) : [...cur, action.directoryId] }
+      })
     case 'settings/update':
       return { ...state, settings: { ...state.settings, ...action.patch } }
     case 'state/replace':

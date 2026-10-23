@@ -54,7 +54,7 @@ export function MyEventsPage() {
           label="Filter by event type"
           value={type}
           onChange={setType}
-          options={[{ id: 'all', label: 'All' }, { id: 'wedding', label: 'Weddings' }, { id: 'birthday', label: 'Birthdays' }, { id: 'community', label: 'Community' }]}
+          options={[{ id: 'all', label: 'All' }, { id: 'wedding', label: 'Weddings' }, { id: 'birthday', label: 'Birthdays' }, { id: 'anniversary', label: 'Anniversaries' }, { id: 'community', label: 'Community' }]}
         />
         <SelectField label="Sort by" value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="toolbar__sort">
           <option value="date">Event date</option>
@@ -68,7 +68,7 @@ export function MyEventsPage() {
             <ButtonLink to="/app/events/new" variant="primary" icon="plus">Plan your first event</ButtonLink>
             <Button onClick={() => store.resetToDemo()}>Load sample events</Button>
           </div>}>
-          Start a wedding, birthday or community event, or load the sample events to explore.
+          Start a wedding, birthday, anniversary or community event, or load the sample events to explore.
         </EmptyState>
       ) : shown.length === 0 ? (
         <EmptyState icon="search" title="No matching events">Try a different search or filter.</EmptyState>

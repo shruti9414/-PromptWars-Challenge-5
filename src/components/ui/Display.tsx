@@ -50,12 +50,14 @@ export function ProgressRing({ value, label, caption }: { value: number; label: 
 }
 
 export function EmptyState({
-  icon = 'sparkles', title, children, action,
-}: { icon?: IconName; title: string; children?: ReactNode; action?: ReactNode }) {
+  icon = 'sparkles', title, children, action, level = 2,
+}: { icon?: IconName; title: string; children?: ReactNode; action?: ReactNode; level?: 1 | 2 | 3 }) {
+  // The heading level is chosen by the caller so the page outline never skips a level or lacks an h1.
+  const Heading = `h${level}` as const
   return (
     <div className="empty">
       <span className="empty__icon"><Icon name={icon} size={26} /></span>
-      <h3 className="empty__title">{title}</h3>
+      <Heading className="empty__title">{title}</Heading>
       {children && <p className="empty__text">{children}</p>}
       {action}
     </div>

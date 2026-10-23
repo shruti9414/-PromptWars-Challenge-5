@@ -9,7 +9,7 @@ const input = (type: EventType, date: string, budget = 1_000_000): EventInput =>
 })
 
 describe('templatePlanner', () => {
-  it.each(['wedding', 'birthday', 'community'] as const)('%s plan: budget lines add up exactly to the budget', (type) => {
+  it.each(['wedding', 'birthday', 'anniversary', 'community'] as const)('%s plan: budget lines add up exactly to the budget', (type) => {
     for (const budget of [1000, 123_457, 2_500_000]) {
       const plan = templatePlanner.generate(input(type, '2027-06-01', budget), TODAY)
       expect(plan.expenses.reduce((a, e) => a + e.estimated, 0)).toBe(budget)
@@ -17,7 +17,7 @@ describe('templatePlanner', () => {
     }
   })
 
-  it.each(['wedding', 'birthday', 'community'] as const)('%s plan: every task is due between today and the event', (type) => {
+  it.each(['wedding', 'birthday', 'anniversary', 'community'] as const)('%s plan: every task is due between today and the event', (type) => {
     for (const date of ['2026-10-24', '2026-11-15', '2027-01-10', '2028-01-10']) {
       const plan = templatePlanner.generate(input(type, date), TODAY)
       expect(plan.tasks.length).toBeGreaterThan(5)

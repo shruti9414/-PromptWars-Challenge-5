@@ -17,6 +17,7 @@ interface Props {
 
 /** Mount with a `key` so the form resets for each guest. */
 export function GuestDialog({ open, guest, onClose, onSave }: Props) {
+  const [guestId] = useState(() => guest?.id ?? newId())
   const [form, setForm] = useState<GuestForm>({
     name: guest?.name ?? '',
     group: guest?.group ?? 'friends',
@@ -31,7 +32,7 @@ export function GuestDialog({ open, guest, onClose, onSave }: Props) {
     const result = validateGuest(form)
     setErrors(result.errors)
     if (hasErrors(result.errors)) return
-    onSave({ id: guest?.id ?? newId(), name: result.value.name, group: form.group, rsvp: form.rsvp, plusOnes: result.value.plusOnes, dietary: result.value.dietary })
+    onSave({ id: guestId, name: result.value.name, group: form.group, rsvp: form.rsvp, plusOnes: result.value.plusOnes, dietary: result.value.dietary })
   }
 
   return (

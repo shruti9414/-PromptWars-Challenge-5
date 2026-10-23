@@ -11,6 +11,7 @@ export function RequireEvent({ children }: { children: (event: EventPlan) => Rea
     return (
       <EmptyState
         icon="calendar"
+        level={1}
         title="No event selected"
         action={
           <div className="empty__actions">

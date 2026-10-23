@@ -196,7 +196,7 @@ describe('node adapter', () => {
     const r: NodeRes = { get statusCode() { return out.statusCode }, set statusCode(v) { out.statusCode = v }, setHeader: (k, v) => { out.headers[k.toLowerCase()] = v }, end: (b) => { out.body = b ?? '' } }
     return { r, out }
   }
-  const req = (method: string, body?: unknown): NodeReq => ({ method, headers: { 'x-forwarded-for': '9.9.9.9, 1.1.1.1' }, body })
+  const req = (method: string, body?: unknown): NodeReq => ({ method, headers: { 'x-forwarded-for': '9.9.9.9, 1.1.1.1', 'content-type': 'application/json' }, body })
 
   it('reads the key from the environment and trims it; blank means demo', () => {
     expect(readEnv({ ANTHROPIC_API_KEY: '  abc  ' }).apiKey).toBe('abc')
@@ -223,3 +223,45 @@ describe('node adapter', () => {
   })
 })
 
+
+describe('request origin and content type', () => {
+  const res = () => {
+    const out = { statusCode: 0, headers: {} as Record<string, string>, body: '' }
+    const r: NodeRes = { get statusCode() { return out.statusCode }, set statusCode(v) { out.statusCode = v }, setHeader: (k, v) => { out.headers[k.toLowerCase()] = v }, end: (b) => { out.body = b ?? '' } }
+    return { r, out }
+  }
+  const call = async (headers: Record<string, string>, body: unknown = planBody()) => {
+    const a = res()
+    await handleNode('plan', { method: 'POST', headers: { host: 'app.example.com', ...headers }, body }, a.r, { today: TODAY })
+    return a.out
+  }
+  const json = { 'content-type': 'application/json' }
+
+  it('refuses a request that comes from another site', async () => {
+    expect((await call({ ...json, origin: 'https://evil.example' })).statusCode).toBe(403)
+    expect((await call({ ...json, 'sec-fetch-site': 'cross-site' })).statusCode).toBe(403)
+    expect((await call({ ...json, origin: 'not a url' })).statusCode).toBe(403)
+  })
+  it('accepts the same origin, and clients that send no Origin header', async () => {
+    expect((await call({ ...json, origin: 'https://app.example.com' })).statusCode).toBe(200)
+    expect((await call(json)).statusCode).toBe(200)
+  })
+  it('requires a JSON content type, which also blocks plain HTML form posts', async () => {
+    expect((await call({ 'content-type': 'text/plain' })).statusCode).toBe(415)
+    expect((await call({})).statusCode).toBe(415)
+  })
+  it('sets hardening headers and returns a generic message when a handler throws', async () => {
+    const ok = await call(json)
+    expect(ok.headers['x-content-type-options']).toBe('nosniff')
+    expect(ok.headers['referrer-policy']).toBe('no-referrer')
+    const bad = res()
+    const hostile = { get context(): never { throw new Error('boom at C:\secret\path with sk-ant-xyz') } }
+    await handleNode('plan', { method: 'POST', headers: { ...json } , body: hostile }, bad.r, { today: TODAY })
+    expect(bad.out.statusCode).toBeGreaterThanOrEqual(400)
+    expect(bad.out.body).not.toMatch(/boom|secret|sk-ant|stack|at \w+/i)
+  })
+  it('measures the size limit in bytes, so multi-byte text cannot slip past it', async () => {
+    const wide = planBody({ context: { ...ctx, instructions: '\u20b9'.repeat(Math.ceil(MAX_BODY_BYTES / 2)) } })
+    expect((await planHandler(JSON.stringify(wide), { today: TODAY }, createLimiter(1000, 60_000), 'ip')).status).toBe(413)
+  })
+})

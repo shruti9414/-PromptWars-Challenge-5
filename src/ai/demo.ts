@@ -17,21 +17,25 @@ const has = (ctx: AiContext, pref: string) => ctx.preferences.includes(pref)
 const DECOR: Record<EventType, string[]> = {
   wedding: ['Layered candlelight and fairy lights over the main seating', 'A statement entrance arch in seasonal flowers', 'Table runners and place cards that echo the colour palette', 'A framed welcome board with the couple’s story'],
   birthday: ['A balloon garland framing the dessert table', 'Photo wall with personal milestones of the guest of honour', 'Themed table settings and a banner at the entrance', 'String lights for evening atmosphere'],
+  anniversary: ['Photo timeline of the years together along one wall', 'Candles and flowers in the couple’s favourite colours', 'Place cards with a short memory for each guest table', 'A guest-book or voice-note corner for wishes'],
   community: ['Clear, large-print signage so every stall and exit is easy to find', 'Bunting and banners in the community’s colours', 'Seating clusters with a welcome table at the entrance', 'A community photo wall that guests can add to'],
 }
 const ACTIVITIES: Record<EventType, string[]> = {
   wedding: ['A short welcome toast with a memory-sharing moment', 'Guest message station instead of a formal guest book', 'Planned family portraits in the golden hour window', 'A late-evening dance floor with a final-song send-off'],
   birthday: ['A quick trivia game about the guest of honour', 'A memory jar where guests drop notes', 'A cake-cutting moment with a short toast', 'A small group game that mixes friend circles'],
+  anniversary: ['A toast from family and a few words from the couple', 'A slideshow or short video of milestones', 'A table-by-table game of shared memories', 'A first-dance or song-of-the-year moment'],
   community: ['A 15-minute welcome and thank-you speech', 'A hands-on stall or workshop corner for families', 'A raffle or fundraising moment with clear rules', 'A volunteer recognition round at the end'],
 }
 const ENTERTAINMENT: Record<EventType, string[]> = {
   wedding: ['A live acoustic set during dinner, then a DJ for dancing', 'A playlist agreed with the couple, with a do-not-play list'],
   birthday: ['A DJ or curated playlist with age-appropriate music', 'A short surprise performance or video montage'],
+  anniversary: ['A playlist from the years the couple met and married', 'A live soloist or small ensemble during dinner'],
   community: ['Local performers or an open-mic hour', 'Background music at low volume plus a speaker-ready sound setup'],
 }
 const FOOD: Record<EventType, string[]> = {
   wedding: ['A seated or buffet menu with clearly labelled dishes', 'A late-night snack counter for the dance floor', 'A signature non-alcoholic welcome drink'],
   birthday: ['A dessert-led spread with one centrepiece cake', 'Finger food that works while guests mingle', 'A themed drink station'],
+  anniversary: ['A plated or buffet menu with the couple’s favourite dishes', 'A celebration cake with a small cutting ceremony', 'A signature welcome drink'],
   community: ['Refreshments that can be served quickly in a queue', 'Water points and a clearly labelled allergen list', 'Local food stalls or a shared potluck table'],
 }
 

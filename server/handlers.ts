@@ -44,7 +44,8 @@ const PROVIDER_STATUS: Record<string, [number, ErrorKind]> = {
 function checkBody(raw: unknown): HandlerResult | null {
   let size = 0
   try {
-    size = typeof raw === 'string' ? raw.length : JSON.stringify(raw ?? null).length
+    // Measure bytes, not characters, so multi-byte text cannot slip past the limit.
+    size = new TextEncoder().encode(typeof raw === 'string' ? raw : JSON.stringify(raw ?? null)).length
   } catch {
     return fail(400, 'invalid_request', 'The request could not be read.')
   }

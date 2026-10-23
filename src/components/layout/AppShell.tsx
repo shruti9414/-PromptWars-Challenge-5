@@ -1,7 +1,8 @@
 ﻿import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { EVENT_TYPE_LABEL } from '../../data/constants'
-import { store, useStore } from '../../state/store'
+import { dismissLoadNotice, getLoadNotice } from '../../state/persistence'
+import { store, useSaveFailed, useStore } from '../../state/store'
 import { Icon } from '../ui/Icon'
 import type { IconName } from '../ui/Icon'
 import { IconButton } from '../ui/Button'
@@ -63,6 +64,29 @@ function SideNav({ onNavigate }: { onNavigate?: () => void }) {
   )
 }
 
+/** Tells people when their data could not be read at startup, or when the browser refused to save. */
+function StorageNotices() {
+  const saveFailed = useSaveFailed()
+  const [loadNotice, setLoadNotice] = useState(getLoadNotice)
+  if (!saveFailed && !loadNotice) return null
+  return (
+    <div className="notice storage-notice" role="status">
+      <Icon name="alert" size={18} />
+      <div>
+        {saveFailed && (
+          <p>Your latest changes could not be saved in this browser (storage may be full or blocked, for example in a private window). They will be lost when you close this tab. Use Settings &rarr; Export as JSON to keep a copy.</p>
+        )}
+        {loadNotice && (
+          <p>
+            {loadNotice}{' '}
+            <button type="button" className="link" onClick={() => { dismissLoadNotice(); setLoadNotice(null) }}>Dismiss</button>
+          </p>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false)
   const location = useLocation()
@@ -100,7 +124,7 @@ export function AppShell() {
         <SideNav onNavigate={() => setMenuOpen(false)} />
         <div className="shell__foot">
           <p className="shell__note">
-            <Icon name="info" size={16} /> Phase 1 preview. Sample data lives only in this browser; no AI or servers are connected yet.
+            <Icon name="info" size={16} /> Your events are saved only in this browser. Sample events are fictional. AI plans are labelled live or demo.
           </p>
           <Link to="/" className="shell__home">Back to landing page</Link>
         </div>
@@ -119,9 +143,10 @@ export function AppShell() {
             <Icon name="menu" />
           </button>
           <Logo />
-          <span className="topbar__badge">Phase 1 demo</span>
+          <span className="topbar__badge">Saved in this browser</span>
         </header>
         <main id="main" ref={mainRef} tabIndex={-1} className="content">
+          <StorageNotices />
           <Outlet />
         </main>
       </div>

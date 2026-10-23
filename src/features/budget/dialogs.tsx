@@ -17,6 +17,8 @@ interface ExpenseDialogProps {
 
 /** Mount with a `key` so the form resets each time it opens for a different expense. */
 export function ExpenseDialog({ open, expense, onClose, onSave }: ExpenseDialogProps) {
+  // One id per opened dialog, so a repeated click on Save updates the same record instead of adding a copy.
+  const [expenseId] = useState(() => expense?.id ?? newId())
   const [form, setForm] = useState<ExpenseForm>({
     title: expense?.title ?? '',
     category: expense?.category ?? 'venue',
@@ -33,7 +35,7 @@ export function ExpenseDialog({ open, expense, onClose, onSave }: ExpenseDialogP
     onSave({
       ...expense,
       manual: true,
-      id: expense?.id ?? newId(),
+      id: expenseId,
       title: result.value.title,
       category: form.category,
       estimated: result.value.estimated,

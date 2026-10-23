@@ -60,12 +60,12 @@ export function LandingPage() {
       <main id="top-content">
         <section className="l-hero" aria-labelledby="hero-title">
           <div className="l-hero__copy">
-            <p className="l-chip"><Icon name="sparkles" size={15} /> Phase 1 preview &middot; demo data</p>
+            <p className="l-chip"><Icon name="sparkles" size={15} /> Sample events included &middot; saved in your browser</p>
             <h1 id="hero-title" className="l-hero__title">
               Your dream event,<br />planned with <em>Gatherly</em>.
             </h1>
             <p className="l-hero__lead">
-              One calm workspace for weddings, birthdays and community events: budgets that add up, timelines that keep you moving, and vendor checklists you can actually finish.
+              One calm workspace for weddings, birthdays, anniversaries and community events: budgets that add up, timelines that keep you moving, and vendor checklists you can actually finish.
             </p>
             <div className="l-hero__actions">
               <ButtonLink to="/app/dashboard" variant="primary" size="lg" iconAfter="arrow">Explore the demo</ButtonLink>
@@ -160,7 +160,7 @@ export function LandingPage() {
       <footer className="l-foot">
         <Logo tone="light" />
         <p>
-          Phase 1 demo. Events, vendors and guests shown are sample data. The planning suggestions are rule-based templates; no live AI, authentication, vendor availability or database is connected yet. Photography from Unsplash.
+          Events, vendors and guests shown are fictional sample data, and your own data stays in this browser. AI plans come from a live model only when the server has an API key; otherwise they are labelled as a demo planner. No vendor availability, accounts or database are connected. Photography from Unsplash.
         </p>
       </footer>
     </div>

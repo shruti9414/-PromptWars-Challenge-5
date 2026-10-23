@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../../components/ui/Button'
-import { DemoTag, PageHeader } from '../../components/ui/Display'
+import { Badge, DemoTag, PageHeader } from '../../components/ui/Display'
+import { useAiStatus } from '../ai/useAiStatus'
 import { SelectField, TextField } from '../../components/ui/Fields'
 import { Icon } from '../../components/ui/Icon'
 import { ConfirmDialog } from '../../components/ui/Modal'
@@ -28,6 +29,7 @@ function downloadJson() {
 export function SettingsPage() {
   useDocumentTitle('Settings')
   const settings = useStore((s) => s.settings)
+  const ai = useAiStatus()
   const events = useStore((s) => s.events)
   const [name, setName] = useState(settings.displayName)
   const [pending, setPending] = useState<Pending>(null)
@@ -63,7 +65,7 @@ export function SettingsPage() {
 
       <section className="card" aria-labelledby="s-data">
         <h2 id="s-data" className="card__title">Your data</h2>
-        <p className="muted">{events.length} {events.length === 1 ? 'event is' : 'events are'} saved in this browser&rsquo;s local storage. There is no account or server in Phase 1.</p>
+        <p className="muted">{events.length} {events.length === 1 ? 'event is' : 'events are'} saved in this browser&rsquo;s local storage. There is no account and no database, so clearing site data or switching browser starts fresh. Do not enter passwords or card details anywhere in the app.</p>
         <div className="settings__buttons">
           <Button icon="download" onClick={() => { downloadJson(); toast('Exported gatherly-events.json') }} disabled={events.length === 0}>Export as JSON</Button>
           <Button onClick={() => setPending('reset')}>Reset to sample events</Button>
@@ -72,9 +74,9 @@ export function SettingsPage() {
       </section>
 
       <section className="card" aria-labelledby="s-ai">
-        <h2 id="s-ai" className="card__title"><Icon name="sparkles" size={18} /> AI assistant <DemoTag>Not connected</DemoTag></h2>
+        <h2 id="s-ai" className="card__title"><Icon name="sparkles" size={18} /> AI assistant {ai === null ? null : ai.mode === 'live' ? <Badge tone="ok">Live AI</Badge> : <DemoTag>Demo mode</DemoTag>}</h2>
         <p className="muted">
-          Phase 1 ships the interface and planning workflow only. The suggestions you see are rule-based templates, not a live AI model, and no vendor availability, authentication or database is connected. The planner is built behind a single interface so a live assistant can be added later without changing the screens.
+          {ai?.mode === 'live' ? 'A live AI model is configured on the server. Plans it writes are checked by the app, and every number is recalculated before you review it.' : 'No AI key is configured on the server, so the AI Planner uses a built-in rule-based demo planner. It is clearly labelled and is not an AI model.'} Vendor availability and real quotations are never invented.
         </p>
       </section>
 

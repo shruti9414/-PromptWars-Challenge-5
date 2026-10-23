@@ -11,11 +11,14 @@ import { daysLeft, groupTasks, isOverdue, taskProgress } from '../../lib/tasks'
 import { useDocumentTitle, useToday } from '../../hooks'
 import { store } from '../../state/store'
 import type { EventPlan, Priority, Task } from '../../types'
+import { dropDependencyRefs } from '../../lib/dependencies'
+import { CalendarView } from './CalendarView'
 import { TaskDialog } from './TaskDialog'
 import './timeline.css'
 
 type Status = 'all' | 'open' | 'overdue' | 'done'
 type PriorityFilter = Priority | 'all'
+type View = 'list' | 'calendar'
 
 export function TimelinePage() {
   useDocumentTitle('Timeline')
@@ -27,6 +30,7 @@ function Timeline({ event }: { event: EventPlan }) {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<Status>('all')
   const [priority, setPriority] = useState<PriorityFilter>('all')
+  const [view, setView] = useState<View>('list')
   const [editing, setEditing] = useState<Task | 'new' | null>(null)
   const [deleting, setDeleting] = useState<Task | null>(null)
 
@@ -71,6 +75,7 @@ function Timeline({ event }: { event: EventPlan }) {
         <SearchInput label="Search tasks" placeholder="Search tasks" value={query} onChange={(e) => setQuery(e.target.value)} />
         <FilterChips<Status> label="Filter by status" value={status} onChange={setStatus}
           options={[{ id: 'all', label: 'All' }, { id: 'open', label: 'To do' }, { id: 'overdue', label: 'Overdue' }, { id: 'done', label: 'Done' }]} />
+        <FilterChips<View> label="Timeline view" value={view} onChange={setView} options={[{ id: 'list', label: 'List' }, { id: 'calendar', label: 'Calendar' }]} />
         <FilterChips<PriorityFilter> label="Filter by priority" value={priority} onChange={setPriority}
           options={[{ id: 'all', label: 'Any priority' }, { id: 'high', label: 'High' }, { id: 'medium', label: 'Medium' }, { id: 'low', label: 'Low' }]} />
       </div>
@@ -81,6 +86,8 @@ function Timeline({ event }: { event: EventPlan }) {
         </EmptyState>
       ) : groups.length === 0 ? (
         <EmptyState icon="search" title="No matching tasks">Adjust the search or filters.</EmptyState>
+      ) : view === 'calendar' ? (
+        <CalendarView tasks={filtered} today={today} eventDate={event.date} onOpen={setEditing} />
       ) : (
         <ol className="tl">
           {groups.map((g) => (
@@ -125,6 +132,7 @@ function Timeline({ event }: { event: EventPlan }) {
         key={editing === 'new' ? 'new' : (editing?.id ?? 'closed')}
         open={editing !== null}
         task={editing && editing !== 'new' ? editing : undefined}
+        allTasks={event.tasks}
         defaultDate={event.date > today ? today : event.date}
         maxDate={event.date}
         onClose={() => setEditing(null)}
@@ -136,7 +144,7 @@ function Timeline({ event }: { event: EventPlan }) {
         message="This task will be removed from the timeline."
         onCancel={() => setDeleting(null)}
         onConfirm={() => {
-          if (deleting) store.dispatch({ type: 'item/remove', eventId: event.id, collection: 'tasks', itemId: deleting.id })
+          if (deleting) store.dispatch({ type: 'event/update', id: event.id, patch: { tasks: dropDependencyRefs(event.tasks.filter((t) => t.id !== deleting.id), deleting.id) } })
           toast('Task deleted')
           setDeleting(null)
         }}

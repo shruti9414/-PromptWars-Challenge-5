@@ -45,6 +45,17 @@ export const SHARES: Record<EventType, BudgetShare[]> = {
     { category: 'activities', pct: 6 },
     { category: 'contingency', pct: 7 },
   ],
+  anniversary: [
+    { category: 'venue', pct: 24 },
+    { category: 'catering', pct: 32 },
+    { category: 'decor', pct: 12 },
+    { category: 'photo', pct: 7 },
+    { category: 'music', pct: 8 },
+    { category: 'attire', pct: 4 },
+    { category: 'stationery', pct: 2 },
+    { category: 'favors', pct: 3 },
+    { category: 'contingency', pct: 8 },
+  ],
   community: [
     { category: 'venue', pct: 25 },
     { category: 'catering', pct: 25 },
@@ -84,6 +95,17 @@ export const TASKS: Record<EventType, TaskTemplate[]> = {
     { title: 'Confirm RSVPs and dietary needs', daysBefore: 7, priority: 'high' },
     { title: 'Set up and do a final walkthrough', daysBefore: 1, priority: 'medium' },
   ],
+  anniversary: [
+    { title: 'Decide the milestone, guest list and format', daysBefore: 90, priority: 'high' },
+    { title: 'Book the venue or reserve the space', daysBefore: 75, priority: 'high', category: 'venue' },
+    { title: 'Book a photographer for portraits', daysBefore: 60, priority: 'medium', category: 'photo' },
+    { title: 'Send invitations', daysBefore: 45, priority: 'medium', category: 'stationery' },
+    { title: 'Finalise the menu and caterer', daysBefore: 35, priority: 'high', category: 'catering' },
+    { title: 'Plan music and a toast or photo slideshow', daysBefore: 25, priority: 'medium', category: 'music' },
+    { title: 'Arrange outfits and decor', daysBefore: 18, priority: 'low', category: 'decor' },
+    { title: 'Confirm RSVPs and dietary needs', daysBefore: 7, priority: 'high' },
+    { title: 'Set up and do a final walkthrough', daysBefore: 1, priority: 'medium' },
+  ],
   community: [
     { title: 'Define the purpose, date and audience', daysBefore: 90, priority: 'high' },
     { title: 'Secure the venue and any permits', daysBefore: 75, priority: 'high', category: 'venue' },
@@ -100,6 +122,7 @@ export const TASKS: Record<EventType, TaskTemplate[]> = {
 export const VENDOR_CATEGORIES: Record<EventType, CategoryId[]> = {
   wedding: ['venue', 'catering', 'photo', 'decor', 'music', 'attire', 'stationery', 'transport'],
   birthday: ['venue', 'catering', 'decor', 'music', 'photo', 'activities'],
+  anniversary: ['venue', 'catering', 'photo', 'decor', 'music', 'stationery'],
   community: ['venue', 'catering', 'music', 'decor', 'stationery', 'activities'],
 }
 

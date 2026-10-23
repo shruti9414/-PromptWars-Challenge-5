@@ -24,6 +24,8 @@ function Directory({ event }: { event: EventPlan }) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<CategoryId | 'all'>('all')
   const [fitOnly, setFitOnly] = useState(true)
+  const [favOnly, setFavOnly] = useState(false)
+  const favs = useMemo(() => new Set(event.favoriteVendors ?? []), [event.favoriteVendors])
   const onList = useMemo(() => new Set(event.vendors.map((v) => v.directoryId).filter(Boolean)), [event.vendors])
 
   const rows = useMemo(() => {
@@ -32,9 +34,15 @@ function Directory({ event }: { event: EventPlan }) {
       (v) =>
         (category === 'all' || v.category === category) &&
         (!fitOnly || v.eventTypes.includes(event.type)) &&
+        (!favOnly || favs.has(v.id)) &&
         (!q || `${v.name} ${v.city} ${v.tags.join(' ')}`.toLowerCase().includes(q)),
     )
-  }, [query, category, fitOnly, event.type])
+  }, [query, category, fitOnly, favOnly, favs, event.type])
+
+  const toggleFav = (id: string, name: string) => {
+    store.dispatch({ type: 'vendor/favorite', eventId: event.id, directoryId: id })
+    toast(favs.has(id) ? `${name} removed from favourites` : `${name} saved to favourites`)
+  }
 
   const add = (id: string) => {
     const v = DIRECTORY.find((d) => d.id === id)
@@ -53,7 +61,7 @@ function Directory({ event }: { event: EventPlan }) {
       </PageHeader>
       <div className="notice" role="note">
         <Icon name="info" size={18} />
-        <p><strong>Demo directory.</strong> These vendors are fictional examples. Prices are illustrative and no availability, contact details or real bookings are connected in Phase 1.</p>
+        <p><strong>Demo directory.</strong> These vendors are fictional examples. Prices are illustrative and no availability, contact details or real bookings are connected.</p>
       </div>
 
       <div className="toolbar">
@@ -66,10 +74,14 @@ function Directory({ event }: { event: EventPlan }) {
           <input type="checkbox" checked={fitOnly} onChange={(e) => setFitOnly(e.target.checked)} />
           Only vendors for {EVENT_TYPE_LABEL[event.type].toLowerCase()}s
         </label>
+        <label className="check-inline">
+          <input type="checkbox" checked={favOnly} onChange={(e) => setFavOnly(e.target.checked)} />
+          Favourites only ({favs.size})
+        </label>
       </div>
 
       {rows.length === 0 ? (
-        <EmptyState icon="search" title="No vendors match">Try another category or turn off the event-type filter.</EmptyState>
+        <EmptyState icon="search" title="No vendors match">{favOnly ? 'No favourites match yet. Star a vendor to save it here.' : 'Try another category or turn off the event-type filter.'}</EmptyState>
       ) : (
         <ul className="dir-grid" aria-label="Demo vendors">
           {rows.map((v) => {
@@ -79,6 +91,9 @@ function Directory({ event }: { event: EventPlan }) {
                 <div className="dir-card__top">
                   <Badge tone="violet">{CATEGORY_BY_ID[v.category].label}</Badge>
                   <DemoTag>Demo</DemoTag>
+                  <button type="button" className="fav" aria-pressed={favs.has(v.id)} aria-label={`Favourite: ${v.name}`} onClick={() => toggleFav(v.id, v.name)}>
+                    <Icon name="star" size={18} />
+                  </button>
                 </div>
                 <h2 className="dir-card__name">{v.name}</h2>
                 <p className="muted">{v.blurb}</p>

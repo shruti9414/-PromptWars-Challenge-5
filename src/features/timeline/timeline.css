@@ -33,3 +33,27 @@
   .task__actions { margin-left: auto; }
 }
 .task__desc { font-size: 0.88rem; color: var(--ink-2); margin-top: 2px; }
+
+.deps { border: 0; padding: 0; margin: 0; min-width: 0; }
+.deps__list { display: grid; gap: 6px; max-height: 190px; overflow: auto; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-md); margin-top: 6px; list-style: none; }
+
+.cal__bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.cal__title { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; }
+.cal__nav { display: flex; gap: 8px; flex-wrap: wrap; }
+.cal__wrap { overflow-x: auto; margin-top: 8px; }
+.cal { width: 100%; min-width: 640px; border-collapse: separate; border-spacing: 0; table-layout: fixed; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); }
+.cal th { padding: 8px 6px; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-3); text-align: left; border-bottom: 1px solid var(--line); }
+.cal td { vertical-align: top; height: 104px; padding: 6px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cal td:last-child { border-right: 0; }
+.cal tr:last-child td { border-bottom: 0; }
+.cal td.is-empty { background: #fafbff; }
+.cal td.is-today { background: #f4f1ff; }
+.cal td.is-event { background: #fff6e6; }
+.cal__day { display: block; font-size: 0.8rem; font-weight: 700; color: var(--ink-2); margin-bottom: 4px; }
+.cal__flag { display: block; font-size: 0.7rem; font-weight: 700; color: #8a5a00; margin-bottom: 3px; }
+.cal__tasks { display: grid; gap: 3px; list-style: none; padding: 0; margin: 0; }
+.cal__task { display: block; width: 100%; text-align: left; font: inherit; font-size: 0.74rem; line-height: 1.25; padding: 3px 6px; border-radius: 6px; border: 0; background: #ece8ff; color: var(--ink); cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cal__task:hover { background: #ddd5ff; }
+.cal__task:focus-visible { outline: 3px solid var(--blue-600); outline-offset: 1px; }
+.cal__task.is-overdue { background: #fde8e8; color: #9b1c1c; }
+.cal__task.is-done { background: #e3f6ee; color: #0b6b4c; text-decoration: line-through; }
