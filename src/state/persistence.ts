@@ -129,7 +129,7 @@ export function dismissLoadNotice(): void {
  * so that saving new changes can never destroy the only copy of the user's data.
  */
 export function loadState(): AppState | null {
-  let raw: string | null = null
+  let raw: string | null
   try {
     raw = localStorage.getItem(STATE_KEY)
   } catch {

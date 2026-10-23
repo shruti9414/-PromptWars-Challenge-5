@@ -4,14 +4,11 @@ import { todayISO } from './lib/dates'
 /** Adds `is-visible` once the element scrolls into view, for the landing page's entrance animations. */
 export function useReveal<T extends HTMLElement>() {
   const ref = useRef<T>(null)
-  const [visible, setVisible] = useState(false)
+  // Without IntersectionObserver (old browsers, tests) content is simply shown.
+  const [visible, setVisible] = useState(() => typeof IntersectionObserver === 'undefined')
   useEffect(() => {
     const el = ref.current
-    if (!el) return
-    if (typeof IntersectionObserver === 'undefined') {
-      setVisible(true)
-      return
-    }
+    if (!el || typeof IntersectionObserver === 'undefined') return
     const io = new IntersectionObserver(
       ([entry]) => {
         if (entry?.isIntersecting) {

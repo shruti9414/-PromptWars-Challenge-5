@@ -10,16 +10,19 @@ import {
 } from '../src/ai/schema'
 import type { ErrorKind } from '../src/ai/schema'
 import { todayISO } from '../src/lib/dates'
-import { callStructured } from './anthropic'
+import { callProvider, DEFAULT_MODELS } from './provider'
+import type { Provider } from './provider'
 import { assistantPrompt, planPrompt, SYSTEM_PROMPT } from './prompts'
 import type { Limiter } from './rateLimit'
 
 export const MAX_BODY_BYTES = 24_000
-export const DEFAULT_MODEL = 'claude-sonnet-5-5'
+export const DEFAULT_MODEL = DEFAULT_MODELS.anthropic
 
 export interface ServerEnv {
-  /** Read from the ANTHROPIC_API_KEY environment variable. Absent means demo mode. */
+  /** The provider key from the server environment. Absent means demo mode. */
   apiKey?: string
+  /** Which provider the key belongs to. Defaults to Anthropic. */
+  provider?: Provider
   model?: string
   timeoutMs?: number
   fetchImpl?: typeof fetch
@@ -42,7 +45,7 @@ const PROVIDER_STATUS: Record<string, [number, ErrorKind]> = {
 }
 
 function checkBody(raw: unknown): HandlerResult | null {
-  let size = 0
+  let size: number
   try {
     // Measure bytes, not characters, so multi-byte text cannot slip past the limit.
     size = new TextEncoder().encode(typeof raw === 'string' ? raw : JSON.stringify(raw ?? null)).length
@@ -65,8 +68,10 @@ function parseJson(raw: unknown): { ok: true; value: unknown } | { ok: false } {
 const invalid = (err: z.ZodError) =>
   fail(400, 'invalid_request', `Invalid request: ${err.issues.slice(0, 3).map((i) => `${i.path.join('.') || 'body'} ${i.message}`).join('; ')}`.slice(0, 380))
 
+const modelFor = (env: ServerEnv): string => env.model ?? DEFAULT_MODELS[env.provider ?? 'anthropic']
+
 export function statusHandler(env: ServerEnv): HandlerResult {
-  return { status: 200, body: env.apiKey ? { live: true, model: env.model ?? DEFAULT_MODEL } : { live: false } }
+  return { status: 200, body: env.apiKey ? { live: true, model: modelFor(env) } : { live: false } }
 }
 
 /** POST /api/plan: full plan or one section. Returns a validated patch; the app turns it into a reviewable proposal. */
@@ -85,9 +90,9 @@ export async function planHandler(raw: unknown, env: ServerEnv, limiter: Limiter
 
   if (!env.apiKey) return { status: 200, body: { source: 'demo', patch: demoSection(section, context, today) } }
 
-  const model = env.model ?? DEFAULT_MODEL
+  const model = modelFor(env)
   const schema = section === 'full' ? FullPlanSchema : SECTION_SCHEMAS[section]
-  const result = await callStructured({
+  const result = await callProvider(env.provider ?? 'anthropic', {
     apiKey: env.apiKey,
     model,
     system: SYSTEM_PROMPT,
@@ -124,8 +129,8 @@ export async function assistantHandler(raw: unknown, env: ServerEnv, limiter: Li
   const today = env.today ?? todayISO()
   if (!env.apiKey) return { status: 200, body: { source: 'demo', reply: demoAssistant(req.message, req.context, req.current, today) } }
 
-  const model = env.model ?? DEFAULT_MODEL
-  const result = await callStructured({
+  const model = modelFor(env)
+  const result = await callProvider(env.provider ?? 'anthropic', {
     apiKey: env.apiKey,
     model,
     system: SYSTEM_PROMPT,

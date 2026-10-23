@@ -93,9 +93,15 @@ export function AppShell() {
   const mainRef = useRef<HTMLElement>(null)
   const menuButtonRef = useRef<HTMLButtonElement>(null)
 
+  // Close the mobile menu when the route changes (state adjusted during render, as React recommends).
+  const [lastPath, setLastPath] = useState(location.pathname)
+  if (lastPath !== location.pathname) {
+    setLastPath(location.pathname)
+    setMenuOpen(false)
+  }
+
   // Move focus to the page content after a route change so keyboard and screen-reader users land on the new screen.
   useEffect(() => {
-    setMenuOpen(false)
     mainRef.current?.focus({ preventScroll: true })
     window.scrollTo({ top: 0 })
   }, [location.pathname])

@@ -51,11 +51,6 @@ export function AssistantPanel({ event, mode, flexibility, today, onPropose }: P
   const seq = useRef(0)
   const logRef = useRef<HTMLDivElement>(null)
 
-  // A different event is a different conversation.
-  useEffect(() => {
-    setMessages([])
-    setError(null)
-  }, [event.id])
   useEffect(() => {
     logRef.current?.scrollTo?.({ top: logRef.current.scrollHeight })
   }, [messages, busy])

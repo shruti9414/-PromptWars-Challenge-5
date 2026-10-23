@@ -10,9 +10,24 @@
 
 Planning a celebration means juggling a budget, dozens of dated tasks, vendors and a guest list, usually across chats and spreadsheets. Gatherly AI is for **families and friends organising a wedding, birthday or anniversary, and volunteers running community events**, who want a clear plan they can adjust, not a black box.
 
-## Approach in one paragraph
+## Approach and logic
 
-You describe the event (type, date, place, guests, budget, theme, preferences). The app builds a starter plan from rule-based templates, and the **AI Planner** can generate or refresh a full plan or one section (theme and ideas, budget, timeline, vendors). AI output is only ever a *suggestion*: it is validated, every number and date is recalculated by application code, and you review a preview before anything is applied. Your own edits, paid items and finished tasks are protected. Everything is stored in your browser; there is no database or account.
+The assistant makes decisions from the user's own context rather than from a fixed script:
+
+- **Event type decides the plan shape.** Weddings, birthdays, anniversaries and community events each have their own budget split, task list (with lead times in days before the event) and vendor categories.
+- **Time left decides the schedule.** Task due dates are computed from the real event date. If the event is soon, lead times are shortened proportionally so nothing is due in the past; dependencies are validated (no loops, no prerequisite due after the task that needs it) and a last-minute task is always present.
+- **Budget style decides the reserve.** Strict, moderate or flexible budgets keep a 10%, 7% or 5% contingency. Totals, cost per guest and over-budget amounts are always calculated by application code; if a plan is over budget, a trimmed alternative that fits is offered (optional lines are cut first).
+- **Venue status, priorities and preferences shape the suggestions** (for example a much smaller venue budget line when the venue is already booked or owned, no venue vendor to chase, and indoor backups in the risk list for outdoor events).
+- **Change requests are computed, not guessed.** "Reduce my budget by 15%" or "50 more guests" is turned into an exact change by the app, shown as a preview and applied only after confirmation.
+- **AI is advisory.** A model proposes themes, ideas, budget lines, tasks, vendor requirements and risks. Its output is validated, its numbers and dates are recalculated, and it never overwrites paid, billed, finished or hand-edited items. Without an API key a rule-based demo planner does the same job and is labelled as such.
+
+## How the solution works
+
+1. **Describe the event** in a four-step wizard (type, date, place, guests, budget, theme, venue status, priorities, preferences). A starter plan is generated from templates.
+2. **Run the AI Planner** (full plan or one section: theme, budget, timeline, vendors, ideas), or chat with the assistant about this event.
+3. **Review the preview.** It lists exactly what would change, flags problems (such as impossible deadlines or an over-budget plan) and shows prices as estimates, never quotations.
+4. **Confirm.** The change is applied, a restorable snapshot is saved, and every screen updates.
+5. **Run the event** from the Budget, Timeline, Vendor and Guest pages. Booking a vendor with a quote links it to a budget expense; changing the event date previews which deadlines move.
 
 ## How it aligns with the challenge
 
@@ -51,7 +66,7 @@ Browser (React)                         Server (Vercel Function / Vite dev middl
 -----------------------------------     -----------------------------------------------
 buildAiContext(event)  --- POST ---->   validate request (Zod, size limit, rate limit)
   only whitelisted fields               build prompt (user text fenced as data)
-                                        Anthropic Messages API, forced tool call  <-- ANTHROPIC_API_KEY (server only)
+                                        Anthropic or OpenAI API, forced tool call  <-- API key (server only)
                                         validate model output (Zod)
 validate response (Zod)     <-------    { source: "live" | "demo", patch }
 buildProposal(): app code recomputes
@@ -60,7 +75,7 @@ buildProposal(): app code recomputes
 Preview  ->  user confirms  ->  apply + snapshot (undo)
 ```
 
-- **Server-side only.** `api/plan.ts`, `api/assistant.ts` and `api/status.ts` are Vercel Functions; during `npm run dev` the same handlers are served by a Vite plugin (`server/vitePlugin.ts`). The API key is read from `ANTHROPIC_API_KEY` in `server/` and never reaches the browser bundle.
+- **Server-side only.** `api/plan.ts`, `api/assistant.ts` and `api/status.ts` are Vercel Functions; during `npm run dev` the same handlers are served by a Vite plugin (`server/vitePlugin.ts`). The API key is read from `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or `DEEPSEEK_API_KEY` in `server/` and never reaches the browser bundle. Each key is used only with its own provider (an `sk-ant-` key is Anthropic, other `sk-` keys in `OPENAI_API_KEY` are OpenAI), and a mismatched key is ignored. DeepSeek is called in JSON mode with a one-time retry; every answer is checked against the same schemas.
 - **Structured output.** The model must answer through a forced tool call whose input schema comes from the Zod schemas in `src/ai/schema.ts` (overview, recommendations, budget lines, timeline items, vendor requirements, risks, assumptions, follow-up questions). Output is validated on the server and again in the browser.
 - **Numbers are never trusted.** `src/ai/budget.ts` and `src/ai/timeline.ts` drop invalid estimates, cap absurd ones, round to whole units, add a contingency reserve sized to the budget style (strict 10%, moderate 7%, flexible 5%), compute totals and cost per guest, detect budget overruns and build a trimmed alternative that fits (optional lines first, then essentials down to a floor). Due dates come from the real event date plus a "days before event" offset; short runways are compressed proportionally, dependencies are validated (unknown, self and circular ones are removed, dependencies are never due after their dependents) and a last-minute task is added if missing. Percentage and guest-count changes from the assistant ("reduce by 15%", "50 more guests") are computed by the app.
 - **Nothing is overwritten silently.** Every result (full plan, section regeneration, assistant proposal) becomes a *proposal* with a preview and a confirmation dialog. Paid, billed, completed, booked or hand-edited items are always kept; stale previews are rejected. Each applied change stores a snapshot you can restore from "Plan history" (last 8 kept).
@@ -72,7 +87,7 @@ Preview  ->  user confirms  ->  apply + snapshot (undo)
 
 ### Live AI vs demo mode
 
-| Feature | With `ANTHROPIC_API_KEY` | Without a key |
+| Feature | With an API key | Without a key |
 | --- | --- | --- |
 | Full plan, section regeneration | Live model | Rule-based demo planner |
 | Assistant | Live model | Keyword rules (6 request types) |
@@ -83,8 +98,10 @@ Preview  ->  user confirms  ->  apply + snapshot (undo)
 
 | Name | Required | Purpose |
 | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | No (enables live AI) | Server-side only. Put it in `.env.local` locally, or in your hosting provider's environment settings |
-| `AI_MODEL` | No | Overrides the default model (`claude-sonnet-5-5`) |
+| `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or `DEEPSEEK_API_KEY` | No (enables live AI; use one) | Server-side only. Put it in `.env.local` locally, or in your hosting provider environment settings |
+| `AI_PROVIDER` | No | `anthropic`, `openai` or `deepseek`, only needed when several keys are set
+| `DEEPSEEK_MODEL` | No | DeepSeek model (default `deepseek-chat`) | |
+| `AI_MODEL` | No | Overrides the default model (`claude-sonnet-5-5` for Anthropic, `gpt-4.1` for OpenAI, `deepseek-chat` for DeepSeek) |
 
 Copy `.env.example` to `.env.local` and fill it in. `.env*` files are git-ignored (only `.env.example` is committed).
 
@@ -94,7 +111,7 @@ Requires **Node.js 20.19+ or 22.12+** (a Vite requirement) and npm. Run every co
 
 ```powershell
 npm install
-copy .env.example .env.local   # optional: add ANTHROPIC_API_KEY for live AI (macOS/Linux: cp)
+copy .env.example .env.local   # optional: add one provider key for live AI (macOS/Linux: cp)
 npm run dev                  # open http://localhost:5173 (UI and /api together); stop with Ctrl+C
 npm run build                # type-check + production build into dist/
 npm run preview              # serve the build at http://localhost:4173
@@ -102,16 +119,24 @@ npm run preview              # serve the build at http://localhost:4173
 
 Without a key the app runs fully in labelled demo mode. See [MANUAL_TESTING.md](MANUAL_TESTING.md) for a browser checklist.
 
-Deploying to Vercel works with no configuration: `dist/` is served statically and `api/*.ts` become functions. Add `ANTHROPIC_API_KEY` in the project's environment variables.
+Deploying to Vercel works with no configuration: `dist/` is served statically and `api/*.ts` become functions. Add one provider key in the project environment variables.
 
 ## Testing
 
-```bash
-npm test           # Vitest + Testing Library, runs once
-npm run typecheck  # strict TypeScript
+```powershell
+npm test               # Vitest + Testing Library, runs once
+npm run typecheck      # strict TypeScript
+npm run lint           # ESLint (typescript-eslint, react-hooks)
+npm run test:coverage  # same tests with a coverage report (about 90% of statements)
+npm run build          # type-check + production build
 ```
 
-The suite (about 340 tests) covers Phase 1 (form validation, budget maths, planner, flows through every screen), Phase 2, and Phase 3 (CSV encode/decode and file validation, task dependencies, date-change rescheduling, calendar helpers, favourites, anniversary events):
+The suite (about 390 tests) covers Phase 1 (form validation, budget maths, planner, flows through every screen), Phase 2, and Phase 3 (CSV encode/decode and file validation, task dependencies, date-change rescheduling, calendar helpers, favourites, anniversary events), plus:
+
+- accessibility: every screen (and the open add-dialogs, with and without events) is run through the axe-core rule set (WCAG 2 A/AA and best practices; colour contrast cannot run in jsdom), plus structural checks
+- server hardening: origin and content-type checks, body size in bytes, generic errors, provider failures for Anthropic, OpenAI and DeepSeek, and repair of slightly malformed JSON-mode output
+- storage reliability: corrupted, partial, tampered and unavailable localStorage
+
 
 - AI schema validation, including malformed, truncated and out-of-range model output
 - budget limits: cost per guest, over-budget detection, trimmed alternatives, contingency, guest/percentage changes
@@ -122,25 +147,25 @@ The suite (about 340 tests) covers Phase 1 (form validation, budget maths, plann
 - proposal validation, no change before confirmation, preserved user data, undo, stale-preview protection
 - UI flows for generation, retry, offline demo fallback, regeneration, history restore and the assistant
 
-Live-model calls are tested against a mocked provider; no test uses the network or a real key.
+Automated tests mock every provider; none uses the network or a real key. The live path was also exercised by hand against the DeepSeek API during development; that is not part of the test suite.
 
 ## Security notes
 
-- The API key is read only in `server/` and `api/` from `ANTHROPIC_API_KEY`; the browser bundle contains no key or provider URL.
+- The API key is read only in `server/` and `api/` from `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or `DEEPSEEK_API_KEY`; the browser bundle contains no key or provider URL.
 - API routes accept only `POST` with `application/json` (`GET` for status), refuse requests whose `Origin` is another site, cap the body at 24 KB (measured in bytes), validate every field with Zod (unknown fields are rejected), rate-limit per client, and return generic error messages with no stack traces or provider bodies. Nothing is logged.
 - Model output is validated with Zod on the server and again in the browser; React renders it as text (no `dangerouslySetInnerHTML`), and user text in prompts is fenced as data.
 - `vercel.json` sets a Content-Security-Policy (same-origin scripts, no framing), `nosniff`, `no-referrer` and a restrictive Permissions-Policy for deployed builds.
 - localStorage is not secure storage and the app has no accounts, so there are no multi-user guarantees. Stored data is validated on load: a damaged event is skipped (the rest load), the original text is copied to a backup key before anything can overwrite it, and a notice explains what happened. If the browser refuses a write, the app says so instead of failing silently.
 
-## Assumptions and limits
+## Assumptions and limitations
 
 - By design, there is no database or login: all data lives in the browser's `localStorage`, scoped to one browser on one device. Clearing site data, using a different browser, or going incognito starts fresh. "Export as JSON" (Settings) is the only way to move data elsewhere.
 - Vendors, guests and prices in the sample data are fictional. No availability or real bookings exist.
 - A vendor's linked Budget expense is created the moment it's booked with a quote, and its planned amount tracks later quote edits; it is never deleted automatically, and any actual/paid amount you enter against it is yours to manage from the Budget page.
 - Guest CSV import accepts `Name, Group, RSVP, Plus-ones, Dietary` columns (any order, case-insensitive); rows need at least a name, unrecognised Group/RSVP values fall back to a default, and out-of-range plus-ones are clamped rather than rejecting the row.
 - Currency (default INR) changes display only; it does not convert values.
-- There is no ESLint configuration; quality gates are strict TypeScript (`noUnusedLocals`, `noUnusedParameters`) and the test suite. Layout at different screen sizes and screen-reader behaviour have not been checked in a real browser; the automated accessibility checks cover structure only (headings, names, ids, alt text).
-- Live-AI behaviour depends on the provider and could not be exercised in this repository without a key: the request/response path is verified with a mocked provider, not a real one.
+- Layout at different screen sizes, keyboard use, focus rings and screen-reader behaviour were not checked in a real browser by the author; automated checks cover structure and axe-core rules only, and text colour contrast was calculated from the design tokens, not measured on screen.
+- Live-AI quality depends on the provider and model. Only DeepSeek (`deepseek-chat`) was tried against its real API (plan sections, a full plan and the assistant, with occasional invalid answers that the app rejects or retries once); Anthropic and OpenAI are covered by mocked tests only.
 - Photography is from Unsplash, served as small WebP files from `public/img`.
 
 ## Accessibility

@@ -199,7 +199,7 @@ describe('node adapter', () => {
   const req = (method: string, body?: unknown): NodeReq => ({ method, headers: { 'x-forwarded-for': '9.9.9.9, 1.1.1.1', 'content-type': 'application/json' }, body })
 
   it('reads the key from the environment and trims it; blank means demo', () => {
-    expect(readEnv({ ANTHROPIC_API_KEY: '  abc  ' }).apiKey).toBe('abc')
+    expect(readEnv({ ANTHROPIC_API_KEY: '  sk-ant-abc  ' }).apiKey).toBe('sk-ant-abc')
     expect(readEnv({ ANTHROPIC_API_KEY: '   ' }).apiKey).toBeUndefined()
     expect(readEnv({}).apiKey).toBeUndefined()
   })
@@ -255,7 +255,7 @@ describe('request origin and content type', () => {
     expect(ok.headers['x-content-type-options']).toBe('nosniff')
     expect(ok.headers['referrer-policy']).toBe('no-referrer')
     const bad = res()
-    const hostile = { get context(): never { throw new Error('boom at C:\secret\path with sk-ant-xyz') } }
+    const hostile = { get context(): never { throw new Error('boom at C:\\secret\\path with sk-ant-xyz') } }
     await handleNode('plan', { method: 'POST', headers: { ...json } , body: hostile }, bad.r, { today: TODAY })
     expect(bad.out.statusCode).toBeGreaterThanOrEqual(400)
     expect(bad.out.body).not.toMatch(/boom|secret|sk-ant|stack|at \w+/i)

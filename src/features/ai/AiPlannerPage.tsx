@@ -218,7 +218,7 @@ function Planner({ event }: { event: EventPlan }) {
         </div>
 
         <div className="ai__side">
-          <AssistantPanel event={event} mode={mode} flexibility={flexibility} today={today} onPropose={show} />
+          <AssistantPanel key={event.id} event={event} mode={mode} flexibility={flexibility} today={today} onPropose={show} />
           <p className="muted ai__foot">{mode === 'live' ? '' : <DemoTag>Simulated</DemoTag>} Suggestions never overwrite your plan until you confirm them.</p>
         </div>
       </div>

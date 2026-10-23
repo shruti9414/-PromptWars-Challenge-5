@@ -22,7 +22,10 @@ export function Modal({ open, title, description, onClose, children, footer, siz
   const descId = useId()
   const panelRef = useRef<HTMLDivElement>(null)
   const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  // Keep the latest callback without re-running the focus-trap effect on every render.
+  useEffect(() => {
+    onCloseRef.current = onClose
+  })
 
   useEffect(() => {
     if (!open) return
@@ -72,15 +75,15 @@ export function Modal({ open, title, description, onClose, children, footer, siz
         aria-labelledby={titleId}
         aria-describedby={description ? descId : undefined}
       >
-        <header className="modal__head">
+        <div className="modal__head">
           <div>
             <h2 id={titleId} className="modal__title">{title}</h2>
             {description && <p id={descId} className="modal__desc">{description}</p>}
           </div>
           <IconButton icon="x" label="Close dialog" onClick={onClose} />
-        </header>
+        </div>
         <div className="modal__body">{children}</div>
-        {footer && <footer className="modal__foot">{footer}</footer>}
+        {footer && <div className="modal__foot">{footer}</div>}
       </div>
     </div>,
     document.body,

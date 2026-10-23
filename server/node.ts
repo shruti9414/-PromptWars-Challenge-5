@@ -1,5 +1,6 @@
 import { assistantHandler, planHandler, statusHandler } from './handlers'
 import type { HandlerResult, ServerEnv } from './handlers'
+import type { Provider } from './provider'
 import { createLimiter } from './rateLimit'
 
 /** Minimal request/response shapes shared by Vercel functions and the Vite dev middleware. */
@@ -19,9 +20,30 @@ export interface NodeRes {
 const planLimiter = createLimiter(8, 60_000)
 const assistantLimiter = createLimiter(20, 60_000)
 
+/**
+ * Picks the provider from the environment. A key is only used with the provider it belongs to (Anthropic keys start
+ * with "sk-ant-"), so a key is never sent to the wrong company; a mismatched key is ignored and demo mode is used.
+ * AI_PROVIDER ("anthropic", "openai" or "deepseek") chooses between configured keys; without it the first of those wins.
+ */
 export function readEnv(source: Record<string, string | undefined>): ServerEnv {
-  const apiKey = source.ANTHROPIC_API_KEY?.trim()
-  return { apiKey: apiKey || undefined, model: source.AI_MODEL?.trim() || undefined }
+  const clean = (v: string | undefined) => v?.trim().replace(/^["']|["']$/g, '') || undefined
+  const anthropic = clean(source.ANTHROPIC_API_KEY)
+  const openai = clean(source.OPENAI_API_KEY)
+  const anthropicOk = anthropic !== undefined && anthropic.startsWith('sk-ant-')
+  const openaiOk = openai !== undefined && openai.startsWith('sk-') && !openai.startsWith('sk-ant-')
+  const deepseek = clean(source.DEEPSEEK_API_KEY)
+  const model = source.AI_MODEL?.trim() || undefined
+  const want = source.AI_PROVIDER?.trim().toLowerCase()
+  const usable: Record<Provider, string | undefined> = {
+    anthropic: anthropicOk ? anthropic : undefined,
+    openai: openaiOk ? openai : undefined,
+    deepseek,
+  }
+  // An explicit AI_PROVIDER wins; otherwise the first configured provider in this order is used.
+  const order: Provider[] = want === 'anthropic' || want === 'openai' || want === 'deepseek' ? [want] : ['anthropic', 'openai', 'deepseek']
+  const provider = order.find((p) => usable[p])
+  if (!provider) return { apiKey: undefined, model }
+  return { apiKey: usable[provider], provider, model: model ?? (provider === 'deepseek' ? source.DEEPSEEK_MODEL?.trim() || undefined : undefined) }
 }
 
 function clientKey(req: NodeReq): string {
